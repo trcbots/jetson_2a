@@ -40,7 +40,7 @@ while True:
 			
 			if num_sats >= NUM_SATS_NEEDED:
 				numSats = True
-			print('lat: ', lat, 'lon: ', lon, 'timestamp: ', times)
+			print('lat: ' + lat + ' lon: ' + lon + ' Satelites: ' + num_sats)
 		except:
 			print("bad GPS signal or GGAONLY invoked")
 			#ser.close()
