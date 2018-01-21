@@ -30,7 +30,7 @@ while True:
 		line = ser.readline()
 		isline = False
 		try: # try statement so that GGAONLY doesn't catch the initial line and crash
-			msg = pynmea2.parse('$' + line, check=True)
+			msg = pynmea2.parse(line, check=True)
 		except:
 			print('bad line for GGAONLY')
 		try:
