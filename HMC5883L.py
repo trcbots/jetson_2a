@@ -18,6 +18,7 @@ declination = 0.1894          #define declination angle of location where measur
 pi          = 3.14159265359     #define pi value
 
 
+
 def Magnetometer_Init():
         #write to Configuration Register A
         bus.write_byte_data(Device_Address, Register_A, 0x70)
@@ -44,7 +45,13 @@ def read_raw_data(addr):
             value = value - 65536
         return value
 
-def getGps():
+bus = smbus.SMBus(1) 	# or bus = smbus.SMBus(0) for older version boards
+Device_Address = 0x1e   # HMC5883L magnetometer device address
+
+Magnetometer_Init()     # initialize HMC5883L magnetometer 
+
+
+def get_heading():
 	#Read Accelerometer raw value
         x = read_raw_data(X_axis_H)
         z = read_raw_data(Z_axis_H)
@@ -65,15 +72,7 @@ def getGps():
 
 
 
-bus = smbus.SMBus(1) 	# or bus = smbus.SMBus(0) for older version boards
-Device_Address = 0x1e   # HMC5883L magnetometer device address
-
-Magnetometer_Init()     # initialize HMC5883L magnetometer 
 
 
 
-while True:
-    
-	getGps()
-        sleep(1)
 

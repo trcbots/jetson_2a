@@ -2,46 +2,16 @@ import serial
 import pynmea2
 import sys
 import math
-
-# GPS CONFIG MACROS
-PMTK_SET_NMEA_BAUDRATE = '$PMTK251,9600*17'
-PMTK_SET_NMEA_UPDATE_5HZ = "$PMTK220,200*2C"
-PMTK_SET_NMEA_OUTPUT_RMCONLY = '$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29'
-PMTK_SET_NMEA_OUTPUT_RMCGGA = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28"
-PMTK_SET_NMEA_OUTPUT_GGAONLY = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29"
+from ultimate_gps import get_gps
+from HMC5883L import get_heading
 
 NUM_SATS_NEEDED = 8
 GPS_WAYPOINT_ARRAY = [[-26.351797, 153.007266], [-26.351816, 153.007397], [-26.351858, 153.007521], [-26.351983, 153.007560]]
 GPS_WAYPOINT_TOLERANCE = 10
 GPS_WAYPOINT_INDEX = 0
+GPS_WAYPOINT_TOLERANCE = 1
 
 
-# GPS CONFIG ROUTINE
-serial_gps = serial.Serial()
-serial_gps.port = '/dev/ttyUSB0'
-serial_gps.baudrate = 9600
-serial_gps.open()
-serial_gps.write(PMTK_SET_NMEA_BAUDRATE + '\r\n')
-serial_gps.write(PMTK_SET_NMEA_OUTPUT_GGAONLY + '\r\n')
-serial_gps.write(PMTK_SET_NMEA_UPDATE_5HZ + '\r\n')
-
-
-def check_gps():
-	for line in serial_gps.read():
-		line = serial_gps.readline()
-		try: # try statement so that GGAONLY doesn't catch the initial line and crash
-			msg = pynmea2.parse(line, check=True)
-		except:
-			print('bad line for GGAONLY')
-			return False, msg
-		try:
-			if int(msg.num_sats) >= NUM_SATS_NEEDED:
-				return True, msg
-			else :
-				return False, msg
-		except:
-			print("bad GPS signal or GGAONLY invoked")
-			return False, msg
 
 
 def next_way_point() :
@@ -98,15 +68,41 @@ def course_to_waypoint(current_lat, current_long) :
 	target_heading = math.degrees(a2)
 	return target_heading
 
+def get_heading_error():
+	heading_error = course_to_waypoint(-26.351797, 153.007266) - get_heading()
+	if(heading_error > -180):
+		if(heading_error > 180):
+			heading_error = heading_error -360
+		else:
+			heading_error = heading_error + 360
+	return heading_error
+
+
+def init():
+	next_way_point()
+
 
 
 
 while True:
-	next_way_point()
-	print(distance_to_waypoint(-26.351797, 153.007266))
-	print(course_to_waypoint(-26.351797, 153.007266))
-	print(" ")
-	gps_found, gps_msg = check_gps()
-	if(gps_found):
-		print('Useful GPS data returned.')
-		print(int(gps_msg.num_sats))
+	init()
+	gps_found, gps_msg = get_gps(NUM_SATS_NEEDED)
+	direction_string = "TRUE," + str(int(distance_to_waypoint(-26.351797, 153.007266))) + "," + str(int(get_heading_error())) + ";"
+	print(direction_string)
+	if(distance_to_waypoint(-26.351797, 153.007266) < GPS_WAYPOINT_TOLERANCE):
+		next_way_point()
+
+
+
+#	if(gps_found):
+#		direction_string = "TRUE," + distance_to_waypoint(-26.351797, 153.007266) + "," + get_heading_error() + ";"
+#		print(direction_string)
+#		if(distance_to_waypoint(-26.351797, 153.007266) < GPS_WAYPOINT_TOLERANCE):
+#			next_way_point()
+	else:
+		direction_string = "FALSE,,;"
+	print(direction_string)
+		
+		
+
+
