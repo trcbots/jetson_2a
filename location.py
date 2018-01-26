@@ -2,6 +2,7 @@ import serial
 import pynmea2
 import sys
 import math
+import time
 from ultimate_gps import get_gps
 from HMC5883L import get_heading
 
@@ -85,26 +86,23 @@ def init():
 
 
 
-#init()
+
+
 while True:	
 	gps_found, gps_msg = get_gps(NUM_SATS_NEEDED)
-	#direction_string = "TRUE," + str(int(distance_to_waypoint(-26.351797, 153.007266))) + "," + str(int(get_heading_error())) + ";"
-	#print(direction_string)
-	#if(distance_to_waypoint(-26.351797, 153.007266) < GPS_WAYPOINT_TOLERANCE):
-	#	next_way_point()
-
-
-
+	millis = int(round(time.time() * 1000))
 	if(gps_found):
 		#print("current lat: " + str(gps_msg.latitude))
 		#print("current long: " + str(gps_msg.longitude))
 		#print("heading: ", get_heading_error(gps_msg.latitude, gps_msg.longitude))
-		direction_string = "TRUE," + str(int(distance_to_waypoint(gps_msg.latitude, gps_msg.longitude))) + "," + str(int(get_heading_error(gps_msg.latitude, gps_msg.longitude))) + ";"
-		#print(direction_string)
-		if(distance_to_waypoint(gps_msg.latitude, gps_msg.longitude) < GPS_WAYPOINT_TOLERANCE):
-			next_way_point()
+		try:
+			direction_string = str(millis) + ",1," + str(int(distance_to_waypoint(gps_msg.latitude, gps_msg.longitude))) + "," + str(int(get_heading_error(gps_msg.latitude, gps_msg.longitude))) + ";"
+			if(distance_to_waypoint(gps_msg.latitude, gps_msg.longitude) < GPS_WAYPOINT_TOLERANCE):
+				next_way_point()
+		except:
+			direction_string = str(millis) + ",0,,;"
 	else:
-		direction_string = "FALSE,,;"
+		direction_string = str(millis) + ",0,,;"
 	print(direction_string)
 		
 		
