@@ -15,7 +15,7 @@ PMTK_SET_NMEA_OUTPUT_GGAONLY = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2
 
 # GPS CONFIG ROUTINE
 serial_gps = serial.Serial()
-serial_gps.port = '/dev/ttyUSB0'
+serial_gps.port = '/dev/ttyUSB2'
 serial_gps.baudrate = 9600
 serial_gps.open()
 serial_gps.write(PMTK_SET_NMEA_BAUDRATE + '\r\n')
@@ -34,6 +34,9 @@ def get_gps(NUM_SATS_NEEDED):
 				#print('bad line for GGAONLY')
 				return False, msg
 			try:
+				#print("GPS Data: ", msg)
+				#print(msg.latitude)
+				#print(msg.longitude)
 				if int(msg.num_sats) >= NUM_SATS_NEEDED:
 					return True, msg
 				else :

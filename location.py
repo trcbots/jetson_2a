@@ -6,7 +6,7 @@ from ultimate_gps import get_gps
 from HMC5883L import get_heading
 
 NUM_SATS_NEEDED = 8
-GPS_WAYPOINT_ARRAY = [[-26.351797, 153.007266], [-26.351816, 153.007397], [-26.351858, 153.007521], [-26.351983, 153.007560]]
+GPS_WAYPOINT_ARRAY = [[-27.8552175, 153.1511374], [-27.8554650, 153.1516188], [-26.351858, 153.007521], [-26.351983, 153.007560]]
 GPS_WAYPOINT_TOLERANCE = 10
 GPS_WAYPOINT_INDEX = 0
 GPS_WAYPOINT_TOLERANCE = 1
@@ -68,13 +68,15 @@ def course_to_waypoint(current_lat, current_long) :
 	target_heading = math.degrees(a2)
 	return target_heading
 
-def get_heading_error():
-	heading_error = course_to_waypoint(-26.351797, 153.007266) - get_heading()
+def get_heading_error(current_lat, current_long):
+	#print("heading: ", get_heading())
+	#print("Course to waypoint: ", course_to_waypoint(current_lat, current_long))
+	heading_error = course_to_waypoint(current_lat, current_long) - get_heading()
 	if(heading_error > -180):
 		if(heading_error > 180):
 			heading_error = heading_error -360
-		else:
-			heading_error = heading_error + 360
+	else:
+		heading_error = heading_error + 360
 	return heading_error
 
 
@@ -83,22 +85,24 @@ def init():
 
 
 
-
-while True:
-	init()
+#init()
+while True:	
 	gps_found, gps_msg = get_gps(NUM_SATS_NEEDED)
-	direction_string = "TRUE," + str(int(distance_to_waypoint(-26.351797, 153.007266))) + "," + str(int(get_heading_error())) + ";"
-	print(direction_string)
-	if(distance_to_waypoint(-26.351797, 153.007266) < GPS_WAYPOINT_TOLERANCE):
-		next_way_point()
+	#direction_string = "TRUE," + str(int(distance_to_waypoint(-26.351797, 153.007266))) + "," + str(int(get_heading_error())) + ";"
+	#print(direction_string)
+	#if(distance_to_waypoint(-26.351797, 153.007266) < GPS_WAYPOINT_TOLERANCE):
+	#	next_way_point()
 
 
 
-#	if(gps_found):
-#		direction_string = "TRUE," + distance_to_waypoint(-26.351797, 153.007266) + "," + get_heading_error() + ";"
-#		print(direction_string)
-#		if(distance_to_waypoint(-26.351797, 153.007266) < GPS_WAYPOINT_TOLERANCE):
-#			next_way_point()
+	if(gps_found):
+		#print("current lat: " + str(gps_msg.latitude))
+		#print("current long: " + str(gps_msg.longitude))
+		#print("heading: ", get_heading_error(gps_msg.latitude, gps_msg.longitude))
+		direction_string = "TRUE," + str(int(distance_to_waypoint(gps_msg.latitude, gps_msg.longitude))) + "," + str(int(get_heading_error(gps_msg.latitude, gps_msg.longitude))) + ";"
+		#print(direction_string)
+		if(distance_to_waypoint(gps_msg.latitude, gps_msg.longitude) < GPS_WAYPOINT_TOLERANCE):
+			next_way_point()
 	else:
 		direction_string = "FALSE,,;"
 	print(direction_string)
